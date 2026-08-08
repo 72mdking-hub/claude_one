@@ -41,7 +41,7 @@ function createSessionExercises(dayKey) {
   return TRAINING_DAYS[dayKey].exercises.map((ex) => ({
     name: ex.name,
     hasWarmup: ex.hasWarmup,
-    target: Storage.getTarget(ex.name) || "",
+    target: Storage.getTarget(ex.name) || ex.defaultTarget || "",
     warmup: ex.hasWarmup ? { weight: "", reps: "" } : null,
     sets: [
       { weight: "", reps: "" },

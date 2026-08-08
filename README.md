@@ -15,10 +15,10 @@ Then visit `http://localhost:8000` (on your phone, use your computer's LAN IP).
 
 ## What's here
 
-- Four training days: Chest & Triceps, Back & Biceps, Legs, Shoulders & Biceps.
-  Only **Chest & Triceps** has a starter exercise list populated (placeholders —
-  swap in your real list and starting weights via `js/data.js`, or hand them to
-  Claude to update). The other three days are scaffolded but empty.
+- Four training days: Chest & Triceps, Back & Abs, Legs, Shoulders & Biceps.
+  **Chest & Triceps** and **Back & Abs** have exercise lists populated with
+  targets and starting weights (edit `js/data.js`, or hand Claude an updated
+  list). Legs and Shoulders & Biceps are still scaffolded but empty.
 - Per exercise: optional warm-up set, 3 working sets (weight in kg + reps),
   your last logged result shown as reference, and an editable "next target".
 - Auto date/time stamp per session, free-text notes, and a completion summary.
