@@ -83,6 +83,9 @@ function render() {
     case "sessions":
       renderSessions(app);
       break;
+    case "export":
+      renderExport(app);
+      break;
     default:
       renderHome(app);
   }
@@ -172,6 +175,7 @@ function renderHome(app) {
     <div class="nav-list">
       <div class="nav-row" id="navHistory"><span>📈 Exercise History</span><span class="chev">›</span></div>
       <div class="nav-row" id="navSessions"><span>🗒️ All Sessions</span><span class="chev">›</span></div>
+      <div class="nav-row" id="navExport"><span>📋 Copy / Export Log</span><span class="chev">›</span></div>
     </div>
   `;
 
@@ -183,6 +187,7 @@ function renderHome(app) {
   app.querySelector("#navSessions").addEventListener("click", () =>
     navigate({ screen: "sessions", filter: "all" })
   );
+  app.querySelector("#navExport").addEventListener("click", () => navigate({ screen: "export", filter: "all" }));
 }
 
 // ---- Workout screen ----
@@ -354,10 +359,14 @@ function renderSummary(app) {
       <thead><tr><th>Exercise</th><th>Target</th><th>Warm-up</th><th>Sets (achieved)</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
+    <button class="secondary-btn" id="copySessionBtn">Copy This Session</button>
     <button class="secondary-btn" id="homeBtn">Back to Home</button>
   `;
 
   app.querySelector("#backBtn").addEventListener("click", () => navigate({ screen: "sessions", filter: "all" }));
+  app.querySelector("#copySessionBtn").addEventListener("click", () =>
+    copyTextToClipboard(buildExportText([session]))
+  );
   app.querySelector("#homeBtn").addEventListener("click", () => navigate({ screen: "home" }));
 }
 
@@ -482,6 +491,99 @@ function renderSessions(app) {
       }
     })
   );
+}
+
+// ---- Export ----
+function formatSessionForExport(s) {
+  const lines = [`== ${s.dayLabel} — ${formatDateTime(s.completedAt || s.startedAt)} ==`];
+  if (s.notes) lines.push(`Notes: ${s.notes}`);
+
+  s.exercises.forEach((ex) => {
+    const hasData = (ex.warmup && (ex.warmup.weight !== "" || ex.warmup.reps !== "")) ||
+      ex.sets.some((st) => st.weight !== "" || st.reps !== "");
+    if (!hasData) return;
+
+    lines.push(`${ex.name} — target: ${ex.target || "—"}`);
+    if (ex.hasWarmup && ex.warmup && (ex.warmup.weight !== "" || ex.warmup.reps !== "")) {
+      const w = ex.warmup.weight !== "" ? `${ex.warmup.weight}kg` : "bodyweight";
+      lines.push(`  Warm-up: ${w} x ${ex.warmup.reps || "?"}`);
+    }
+    ex.sets.forEach((st, i) => {
+      if (st.weight === "" && st.reps === "") return;
+      const w = st.weight !== "" ? `${st.weight}kg` : "bodyweight";
+      lines.push(`  Set ${i + 1}: ${w} x ${st.reps || "?"}`);
+    });
+  });
+
+  return lines.join("\n");
+}
+
+function buildExportText(sessions) {
+  if (!sessions.length) return "No completed sessions to export yet.";
+  const header = `Gym Log Export — ${sessions.length} session${sessions.length === 1 ? "" : "s"}, generated ${formatDateTime(new Date().toISOString())}`;
+  return `${header}\n\n${sessions.map(formatSessionForExport).join("\n\n")}`;
+}
+
+function showToast(msg) {
+  const existing = document.querySelector(".toast");
+  if (existing) existing.remove();
+  const t = document.createElement("div");
+  t.className = "toast";
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 1800);
+}
+
+async function copyTextToClipboard(text, sourceTextareaEl) {
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast("Copied to clipboard");
+    return;
+  } catch (e) {
+    // Clipboard API needs a secure context; fall back to manual selection copy.
+  }
+  if (sourceTextareaEl) {
+    sourceTextareaEl.focus();
+    sourceTextareaEl.select();
+    try {
+      document.execCommand("copy");
+      showToast("Copied to clipboard");
+      return;
+    } catch (e) {
+      // fall through
+    }
+  }
+  showToast("Couldn't auto-copy — select the text and copy manually");
+}
+
+function renderExport(app) {
+  const filter = state.filter || "all";
+  const sessions = Storage.getSessions()
+    .filter((s) => s.completedAt)
+    .filter((s) => filter === "all" || s.day === filter)
+    .sort((a, b) => new Date(a.completedAt) - new Date(b.completedAt));
+
+  const chips = [{ key: "all", label: "All" }, ...DAY_ORDER.map((k) => ({ key: k, label: TRAINING_DAYS[k].label }))]
+    .map((c) => `<div class="chip ${c.key === filter ? "active" : ""}" data-filter="${c.key}">${escapeHtml(c.label)}</div>`)
+    .join("");
+
+  const text = buildExportText(sessions);
+
+  app.innerHTML = `
+    ${subTopbarHtml("Copy / Export Log", "backBtn")}
+    <div class="filter-row">${chips}</div>
+    <p style="color:var(--text-dim);font-size:12.5px;">${sessions.length} completed session${sessions.length === 1 ? "" : "s"} · copy this and paste it into your programme chat.</p>
+    <textarea id="exportText" readonly style="min-height:320px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.5;">${escapeHtml(text)}</textarea>
+    <button class="primary-btn" id="copyBtn">Copy to Clipboard</button>
+  `;
+
+  app.querySelector("#backBtn").addEventListener("click", () => navigate({ screen: "home" }));
+  app.querySelectorAll(".chip").forEach((c) =>
+    c.addEventListener("click", () => navigate({ screen: "export", filter: c.dataset.filter }))
+  );
+  const exportTextEl = app.querySelector("#exportText");
+  exportTextEl.addEventListener("focus", () => exportTextEl.select());
+  app.querySelector("#copyBtn").addEventListener("click", () => copyTextToClipboard(text, exportTextEl));
 }
 
 // ---- Init ----
