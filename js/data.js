@@ -15,14 +15,14 @@ const TRAINING_DAYS = {
   "back-abs": {
     label: "Back & Abs",
     exercises: [
-      { name: "Weighted Pull Up", hasWarmup: true, defaultTarget: "Max clean reps @ 14kg assist" },
-      { name: "Barbell Row", hasWarmup: true, defaultTarget: "10,10,10 @ 57.5kg" },
-      { name: "Lat Pulldown", hasWarmup: false, defaultTarget: "12,12,12 @ 80kg" },
-      { name: "Technogym Low Row", hasWarmup: false, defaultTarget: "12,12,12 @ 52.5kg" },
-      { name: "Cable Face Pulls", hasWarmup: false, defaultTarget: "15,15,15 @ 25kg" },
-      { name: "Leg Raises", hasWarmup: false, defaultTarget: "15,15,15 (bodyweight)" },
-      { name: "Bicycle Crunches", hasWarmup: false, defaultTarget: "20,20,20 (bodyweight)" },
-      { name: "Crunches", hasWarmup: false, defaultTarget: "15,15,15 (bodyweight)" },
+      { name: "Weighted Pull Up", hasWarmup: true, defaultTarget: "Max clean reps @ 14kg assist", startWeight: 14 },
+      { name: "Barbell Row", hasWarmup: true, defaultTarget: "10,10,10 @ 57.5kg", startWeight: 57.5, targetReps: 10 },
+      { name: "Lat Pulldown", hasWarmup: false, defaultTarget: "12,12,12 @ 80kg", startWeight: 80, targetReps: 12 },
+      { name: "Technogym Low Row", hasWarmup: false, defaultTarget: "12,12,12 @ 52.5kg", startWeight: 52.5, targetReps: 12 },
+      { name: "Cable Face Pulls", hasWarmup: false, defaultTarget: "15,15,15 @ 25kg", startWeight: 25, targetReps: 15 },
+      { name: "Leg Raises", hasWarmup: false, defaultTarget: "15,15,15 (bodyweight)", targetReps: 15 },
+      { name: "Bicycle Crunches", hasWarmup: false, defaultTarget: "20,20,20 (bodyweight)", targetReps: 20 },
+      { name: "Crunches", hasWarmup: false, defaultTarget: "15,15,15 (bodyweight)", targetReps: 15 },
     ],
   },
   legs: {

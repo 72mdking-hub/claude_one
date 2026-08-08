@@ -38,17 +38,24 @@ function formatDateTime(iso) {
 }
 
 function createSessionExercises(dayKey) {
-  return TRAINING_DAYS[dayKey].exercises.map((ex) => ({
-    name: ex.name,
-    hasWarmup: ex.hasWarmup,
-    target: Storage.getTarget(ex.name) || ex.defaultTarget || "",
-    warmup: ex.hasWarmup ? { weight: "", reps: "" } : null,
-    sets: [
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-    ],
-  }));
+  return TRAINING_DAYS[dayKey].exercises.map((ex) => {
+    // Only seed sets with the given starting numbers before the exercise has
+    // any real history — once it's been logged, leave fields blank for entry.
+    const hasHistory = !!Storage.getLastResultForExercise(ex.name);
+    const seedWeight = !hasHistory && ex.startWeight != null ? String(ex.startWeight) : "";
+    const seedReps = !hasHistory && ex.targetReps != null ? String(ex.targetReps) : "";
+    return {
+      name: ex.name,
+      hasWarmup: ex.hasWarmup,
+      target: Storage.getTarget(ex.name) || ex.defaultTarget || "",
+      warmup: ex.hasWarmup ? { weight: "", reps: "" } : null,
+      sets: [
+        { weight: seedWeight, reps: seedReps },
+        { weight: seedWeight, reps: seedReps },
+        { weight: seedWeight, reps: seedReps },
+      ],
+    };
+  });
 }
 
 // ---- Navigation ----
