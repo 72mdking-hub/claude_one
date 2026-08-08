@@ -251,6 +251,7 @@ function exerciseCardHtml(ex, idx) {
     </div>
     ${warmupHtml}
     ${setsHtml}
+    <button type="button" class="warmup-toggle" data-add-set="${idx}">+ Add Extra Set</button>
   </div>`;
 }
 
@@ -275,6 +276,7 @@ function renderWorkout(app) {
     <div id="exercises">
       ${currentSession.exercises.map((ex, i) => exerciseCardHtml(ex, i)).join("")}
     </div>
+    <button class="secondary-btn" id="addExerciseBtn">+ Add Exercise</button>
     <button class="primary-btn" id="completeBtn">Mark Session Complete</button>
   `;
 
@@ -287,6 +289,24 @@ function renderWorkout(app) {
   app.querySelector('textarea[data-field="notes"]').addEventListener("input", (e) => {
     currentSession.notes = e.target.value;
     persistCurrentSession();
+  });
+
+  app.querySelector("#addExerciseBtn").addEventListener("click", () => {
+    const name = window.prompt("Exercise name:");
+    if (!name || !name.trim()) return;
+    currentSession.exercises.push({
+      name: name.trim(),
+      hasWarmup: false,
+      target: "",
+      warmup: null,
+      sets: [
+        { weight: "", reps: "" },
+        { weight: "", reps: "" },
+        { weight: "", reps: "" },
+      ],
+    });
+    persistCurrentSession();
+    renderWorkout(app);
   });
 
   app.querySelector("#completeBtn").addEventListener("click", completeSession);
@@ -312,6 +332,17 @@ function handleWorkoutInput(e) {
 }
 
 function handleWorkoutStepClick(e) {
+  const addSetBtn = e.target.closest("[data-add-set]");
+  if (addSetBtn) {
+    const ex = currentSession.exercises[parseInt(addSetBtn.dataset.addSet, 10)];
+    if (ex) {
+      ex.sets.push({ weight: "", reps: "" });
+      persistCurrentSession();
+      renderWorkout(document.getElementById("app"));
+    }
+    return;
+  }
+
   const btn = e.target.closest("[data-step]");
   if (!btn) return;
   const wrap = btn.closest(".stepper");
@@ -349,6 +380,8 @@ function renderSummary(app) {
     })
     .join("");
 
+  const sessionExportText = buildExportText([session]);
+
   app.innerHTML = `
     ${subTopbarHtml("Session Summary", "backBtn")}
     <div class="session-meta">
@@ -359,13 +392,16 @@ function renderSummary(app) {
       <thead><tr><th>Exercise</th><th>Target</th><th>Warm-up</th><th>Sets (achieved)</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
+    <textarea id="summaryExportText" readonly style="min-height:140px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;line-height:1.5;">${escapeHtml(sessionExportText)}</textarea>
     <button class="secondary-btn" id="copySessionBtn">Copy This Session</button>
     <button class="secondary-btn" id="homeBtn">Back to Home</button>
   `;
 
   app.querySelector("#backBtn").addEventListener("click", () => navigate({ screen: "sessions", filter: "all" }));
+  const summaryTextEl = app.querySelector("#summaryExportText");
+  summaryTextEl.addEventListener("focus", () => summaryTextEl.select());
   app.querySelector("#copySessionBtn").addEventListener("click", () =>
-    copyTextToClipboard(buildExportText([session]))
+    copyTextToClipboard(sessionExportText, summaryTextEl)
   );
   app.querySelector("#homeBtn").addEventListener("click", () => navigate({ screen: "home" }));
 }
@@ -535,23 +571,29 @@ function showToast(msg) {
 }
 
 async function copyTextToClipboard(text, sourceTextareaEl) {
-  try {
-    await navigator.clipboard.writeText(text);
-    showToast("Copied to clipboard");
-    return;
-  } catch (e) {
-    // Clipboard API needs a secure context; fall back to manual selection copy.
-  }
-  if (sourceTextareaEl) {
-    sourceTextareaEl.focus();
-    sourceTextareaEl.select();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
     try {
-      document.execCommand("copy");
+      await navigator.clipboard.writeText(text);
       showToast("Copied to clipboard");
       return;
     } catch (e) {
+      // Clipboard API can be blocked (needs a secure context) — fall back below.
+    }
+  }
+  if (sourceTextareaEl) {
+    sourceTextareaEl.focus();
+    sourceTextareaEl.setSelectionRange(0, sourceTextareaEl.value.length);
+    sourceTextareaEl.select();
+    try {
+      if (document.execCommand("copy")) {
+        showToast("Copied to clipboard");
+        return;
+      }
+    } catch (e) {
       // fall through
     }
+    showToast("Couldn't auto-copy — the text is selected, use your keyboard's copy");
+    return;
   }
   showToast("Couldn't auto-copy — select the text and copy manually");
 }
