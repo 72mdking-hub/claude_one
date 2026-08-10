@@ -1,0 +1,233 @@
+:root {
+  --bg: #14120f;
+  --panel-bg: #1d1a15;
+  --panel-border: #3a3226;
+  --ink: #d9cfb8;
+  --ink-dim: #9c9280;
+  --accent: #a8763e;
+  --accent-bright: #c99a52;
+  --danger: #8c3b2e;
+  --danger-bright: #c25c46;
+  --good: #5c7a4a;
+  --font: 'Georgia', 'Iowan Old Style', serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+}
+
+#app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+#topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+#topbar h1 {
+  font-size: 1.4rem;
+  letter-spacing: 0.04em;
+  margin: 0;
+  color: var(--accent-bright);
+  font-weight: normal;
+}
+
+#calendar {
+  display: flex;
+  gap: 14px;
+  font-size: 0.95rem;
+  color: var(--ink-dim);
+}
+
+#calendar span { padding: 2px 0; }
+#season-label { color: var(--accent-bright); font-weight: bold; }
+
+#layout {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+#map-panel {
+  flex: 1 1 640px;
+}
+
+#map-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: #000;
+  border: 1px solid var(--panel-border);
+  cursor: pointer;
+  image-rendering: pixelated;
+}
+
+#map-hint {
+  min-height: 2.6em;
+  color: var(--ink-dim);
+  font-size: 0.9rem;
+  margin: 8px 2px;
+}
+
+#map-hint .task-choice {
+  display: inline-block;
+  margin: 3px 6px 3px 0;
+  padding: 4px 10px;
+  background: var(--panel-bg);
+  border: 1px solid var(--accent);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  border-radius: 2px;
+}
+
+#map-hint .task-choice:hover {
+  background: var(--accent);
+  color: #14120f;
+}
+
+#sidebar {
+  flex: 1 1 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 300px;
+}
+
+.panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  padding: 12px 14px;
+}
+
+.panel h2 {
+  margin: 0 0 8px 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-dim);
+  font-weight: normal;
+  border-bottom: 1px solid var(--panel-border);
+  padding-bottom: 6px;
+}
+
+#resource-list, #colonist-list, #event-log {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+#resource-list li {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 0.95rem;
+}
+
+#resource-list li.low { color: var(--danger-bright); }
+
+.colonist-row {
+  padding: 8px 6px;
+  margin-bottom: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.colonist-row:hover { border-color: var(--panel-border); }
+
+.colonist-row.selected {
+  border-color: var(--accent);
+  background: rgba(168, 118, 62, 0.12);
+}
+
+.colonist-row.dead {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.colonist-name {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+.colonist-task {
+  color: var(--ink-dim);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  color: var(--ink-dim);
+  margin-top: 2px;
+}
+
+.bar-track {
+  flex: 1;
+  height: 5px;
+  background: #0c0a08;
+  border: 1px solid var(--panel-border);
+}
+
+.bar-fill { height: 100%; }
+.bar-fill.hunger { background: var(--danger-bright); }
+.bar-fill.health { background: var(--good); }
+.bar-fill.energy { background: var(--accent-bright); }
+
+.rest-btn {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  background: none;
+  border: 1px solid var(--panel-border);
+  color: var(--ink-dim);
+  padding: 2px 8px;
+  cursor: pointer;
+  font-family: var(--font);
+}
+.rest-btn:hover { border-color: var(--accent); color: var(--ink); }
+
+#advance-day-btn {
+  width: 100%;
+  padding: 10px;
+  background: var(--accent);
+  color: #14120f;
+  border: none;
+  font-family: var(--font);
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+#advance-day-btn:hover { background: var(--accent-bright); }
+
+#log-panel { max-height: 260px; overflow-y: auto; }
+
+#event-log li {
+  font-size: 0.82rem;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(58,50,38,0.5);
+  color: var(--ink-dim);
+}
+#event-log li:first-child { color: var(--ink); }
+#event-log li.warn { color: var(--danger-bright); }
+#event-log li.season { color: var(--accent-bright); }
