@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Din Eidyn's Shore — Chapter 1: 600 AD</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+
+  <header id="topbar">
+    <h1>Din Eidyn's Shore</h1>
+    <div id="calendar">
+      <span id="season-label">Spring</span>
+      <span id="day-label">Day 1</span>
+      <span id="year-label">Year 1</span>
+    </div>
+  </header>
+
+  <main id="layout">
+
+    <section id="map-panel">
+      <canvas id="map-canvas" width="768" height="512"></canvas>
+      <p id="map-hint">Select a colonist below, then click a tile to assign their task.</p>
+    </section>
+
+    <aside id="sidebar">
+
+      <div class="panel" id="resources-panel">
+        <h2>Stores</h2>
+        <ul id="resource-list"></ul>
+      </div>
+
+      <div class="panel" id="colonists-panel">
+        <h2>Household</h2>
+        <ul id="colonist-list"></ul>
+      </div>
+
+      <div class="panel" id="controls-panel">
+        <button id="advance-day-btn">Advance Day &rarr;</button>
+      </div>
+
+      <div class="panel" id="log-panel">
+        <h2>The Telling</h2>
+        <ul id="event-log"></ul>
+      </div>
+
+    </aside>
+
+  </main>
+
+</div>
+
+<script type="module" src="js/game.js"></script>
+</body>
+</html>
