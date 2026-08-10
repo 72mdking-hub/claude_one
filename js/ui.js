@@ -2,6 +2,7 @@
 
 import { TASKS, SEASON_NAMES, SEASON_LENGTH, YEAR_LENGTH } from './colonists.js';
 import { TILE_TYPES } from './map.js';
+import { gloss } from './lexicon.js';
 
 function el(id) { return document.getElementById(id); }
 
@@ -18,7 +19,8 @@ function renderCalendar(state) {
   const seasonIndex = Math.floor((dayInYear - 1) / SEASON_LENGTH);
   const dayInSeason = ((dayInYear - 1) % SEASON_LENGTH) + 1;
   const year = Math.floor((state.day - 1) / YEAR_LENGTH) + 1;
-  el('season-label').textContent = SEASON_NAMES[seasonIndex];
+  const seasonName = SEASON_NAMES[seasonIndex];
+  el('season-label').textContent = seasonName + gloss('seasonLabel', seasonName);
   el('day-label').textContent = `Day ${dayInSeason} of ${SEASON_LENGTH}`;
   el('year-label').textContent = `Year ${year}`;
 }
@@ -28,8 +30,8 @@ function renderResources(state) {
   const list = el('resource-list');
   list.innerHTML = '';
   const rows = [
-    { label: 'Food', value: Math.round(state.resources.food), low: state.resources.food < alive * 10 },
-    { label: 'Wood', value: Math.round(state.resources.wood), low: state.resources.wood < alive * 2 },
+    { label: 'Food' + gloss('resourceLabel', 'food'), value: Math.round(state.resources.food), low: state.resources.food < alive * 10 },
+    { label: 'Wood' + gloss('resourceLabel', 'wood'), value: Math.round(state.resources.wood), low: state.resources.wood < alive * 2 },
   ];
   for (const row of rows) {
     const li = document.createElement('li');
@@ -46,14 +48,25 @@ function renderColonists(state, handlers) {
     const li = document.createElement('li');
     li.className = 'colonist-row' + (c.id === state.selectedColonistId ? ' selected' : '') + (c.dead ? ' dead' : '');
 
-    const taskLabel = c.dead
-      ? 'fallen'
-      : c.task
-        ? `${TASKS[c.task.type].label}${c.task.tile ? ' — ' + TILE_TYPES[state.map[c.task.tile.r][c.task.tile.c].type].label : ''}`
-        : 'idle';
+    let taskLabel;
+    if (c.dead) {
+      taskLabel = 'fallen';
+    } else if (c.task) {
+      const taskText = TASKS[c.task.type].label + gloss('taskLabel', c.task.type);
+      if (c.task.tile) {
+        const tileType = state.map[c.task.tile.r][c.task.tile.c].type;
+        const tileText = TILE_TYPES[tileType].label + gloss('tileLabel', tileType);
+        taskLabel = `${taskText} — ${tileText}`;
+      } else {
+        taskLabel = taskText;
+      }
+    } else {
+      taskLabel = 'idle';
+    }
+    const roleLabel = c.role + gloss('roleLabel', c.role);
 
     li.innerHTML = `
-      <div class="colonist-name"><span>${c.name}</span><span class="colonist-task">${c.role}</span></div>
+      <div class="colonist-name"><span>${c.name}</span><span class="colonist-task">${roleLabel}</span></div>
       <div class="colonist-task">${taskLabel}</div>
       ${bar('hunger', c.hunger)}
       ${bar('health', c.health)}
@@ -107,7 +120,7 @@ function renderHint(state, handlers) {
     for (const opt of state.pendingAssign.options) {
       const btn = document.createElement('span');
       btn.className = 'task-choice';
-      btn.textContent = TASKS[opt].label;
+      btn.textContent = TASKS[opt].label + gloss('taskLabel', opt);
       btn.addEventListener('click', () => handlers.onChooseTask(opt));
       hint.appendChild(btn);
     }

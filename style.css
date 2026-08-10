@@ -30,12 +30,20 @@ body {
 #topbar {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
   border-bottom: 1px solid var(--panel-border);
   padding-bottom: 10px;
   margin-bottom: 16px;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+#lexicon-note {
+  margin: 4px 0 0 0;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--ink-dim);
+  max-width: 46ch;
 }
 
 #topbar h1 {
