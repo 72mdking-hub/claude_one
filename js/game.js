@@ -4,19 +4,30 @@ import {
   isHungryGap, seasonIndexForDay, SEASON_NAMES,
 } from './colonists.js';
 import { render } from './ui.js';
+import { saveState, loadState, clearSave } from './save.js';
 
-const state = {
-  day: 1,
-  map: generateMap(42),
-  resources: { food: 140, wood: 50 },
-  colonists: createStartingColonists(),
-  selectedColonistId: null,
-  pendingAssign: null,
-  hoverTile: null,
-  log: [],
-  gameOver: false,
-  gameOverText: '',
-};
+function freshState() {
+  return {
+    day: 1,
+    map: generateMap(42),
+    resources: { food: 140, wood: 50 },
+    colonists: createStartingColonists(),
+    selectedColonistId: null,
+    pendingAssign: null,
+    hoverTile: null,
+    log: [],
+    gameOver: false,
+    gameOverText: '',
+  };
+}
+
+const state = freshState();
+const saved = loadState();
+let isContinuedSave = false;
+if (saved) {
+  Object.assign(state, saved);
+  isContinuedSave = true;
+}
 
 const canvas = document.getElementById('map-canvas');
 const ctx = canvas.getContext('2d');
@@ -26,7 +37,9 @@ function log(text, type = 'normal') {
   if (state.log.length > 80) state.log.length = 80;
 }
 
-log('Cynan\'s household settles the shore of the loch, in the shadow of Din Eidyn.', 'season');
+if (!isContinuedSave) {
+  log('Cynan\'s household settles the shore of the loch, in the shadow of Din Eidyn.', 'season');
+}
 
 function redrawMap() {
   drawMap(ctx, state.map, state.hoverTile);
@@ -36,6 +49,7 @@ function redrawMap() {
 function renderAll() {
   render(state, handlers);
   redrawMap();
+  saveState(state);
 }
 
 function assignTask(colonistId, taskType, tile) {
@@ -64,6 +78,13 @@ const handlers = {
   },
   onAdvanceDay() {
     advanceDay();
+    renderAll();
+  },
+  onStartAgain() {
+    if (!state.gameOver && !confirm('Start a new household? This will end the current one.')) return;
+    clearSave();
+    Object.assign(state, freshState());
+    log('A new household settles the shore of the loch, in the shadow of Din Eidyn.', 'season');
     renderAll();
   },
 };
@@ -184,5 +205,6 @@ function advanceDay() {
 }
 
 document.getElementById('advance-day-btn').addEventListener('click', () => handlers.onAdvanceDay());
+document.getElementById('start-again-btn').addEventListener('click', () => handlers.onStartAgain());
 
 renderAll();
